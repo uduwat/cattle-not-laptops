@@ -30,3 +30,12 @@
   become_user: "{{ principaluser }}"
   command: chezmoi apply --safe
   when: chezmoi_diff.stdout | length != 0  
+  async: 30
+  poll: 5
+  register: result
+  ignore_errors: true
+
+- name: 
+  debug:
+    msg: "Verify and sync dotfiles manually, timeout reached"
+  when: result is failed

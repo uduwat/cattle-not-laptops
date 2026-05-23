@@ -94,7 +94,15 @@
     - shd101wyy.markdown-preview-enhanced
     - timonwong.shellcheck
   when: item not in vscode_installed_extensions.stdout
-  timeout: 30
+  async: 30
+  poll: 5
+  register: result
+  ignore_errors: true
+
+- name: 
+  debug:
+    msg: "Network Error or verify extension"
+  when: result is failed
 
 - name: Ensure yq/jq are installed
   ansible.builtin.package:
