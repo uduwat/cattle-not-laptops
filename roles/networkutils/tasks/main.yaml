@@ -1,0 +1,13 @@
+- name: Ensure NetTools are installed
+  ansible.builtin.package:
+    name:
+      - ipcalc
+      - subnetcalc
+      - net-tools
+      - nmap
+    state: present
+  register: pkg_result
+
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
