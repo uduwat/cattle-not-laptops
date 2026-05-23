@@ -1,0 +1,12 @@
+- name: Ensure git cli tools are installed
+  ansible.builtin.package:
+    name:
+      - git
+      - glab
+      - gh
+      - git-lfs
+    state: present
+  register: pkg_result
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
