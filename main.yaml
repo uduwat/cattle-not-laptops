@@ -1,0 +1,13 @@
+---
+- name: Standard Configuration
+  hosts: localhost
+  gather_facts: true
+  become_method: ansible.builtin.sudo
+  become: true
+  roles:
+    - shell
+    - networkutils
+    - editors
+    - cloudutils
+    - filemanagers
+    - gitcli
