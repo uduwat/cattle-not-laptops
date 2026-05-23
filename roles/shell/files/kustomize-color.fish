@@ -1,0 +1,1 @@
+set -x KUBECTL_EXTERNAL_DIFF "dyff between --omit-header --set-exit-code"

@@ -1,0 +1,65 @@
+- name: Ensure Fish Shell is installed
+  ansible.builtin.package:
+    name:
+      - fish
+    state: present
+  register: pkg_result
+
+- name: Ensure Shell plugins are installed
+  ansible.builtin.package:
+    name:
+      - ShellCheck
+      - atuin
+      - fzf
+      - zoxide
+      - asciinema
+      - bat
+      - btop
+      - ccze
+      - htop
+    state: present
+  register: pkg_result
+
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
+
+- name: Add Fish shell config files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/home/{{ principaluser }}/.config/fish/conf.d/"
+    mode: '0644'
+    owner: "{{ principaluser }}"
+    group: "{{ principaluser }}"
+  with_fileglob:
+    - "files/*.fish"
+  register: copy_result
+
+- name: Display Fish shell config copy result
+  ansible.builtin.debug:
+    var: copy_result
+
+- name: Add Fish shell config files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/home/{{ principaluser }}/.config/fish/conf.d/"
+    mode: '0644'
+    owner: "{{ principaluser }}"
+    group: "{{ principaluser }}"
+  with_fileglob:
+    - "files/*.fish"
+  register: copy_result
+
+- name: Display Fish shell config copy result
+  ansible.builtin.debug:
+    var: copy_result
+
+- name: Add Fish shell config files from templates
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "/home/{{ principaluser }}/.config/fish/conf.d/"
+    mode: '0644'
+    owner: "{{ principaluser }}"
+    group: "{{ principaluser }}"
+  with_fileglob:
+    - "templates/fish/*.j2"

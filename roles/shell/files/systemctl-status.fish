@@ -1,0 +1,1 @@
+alias s="systemctl status --no-pager -l"
