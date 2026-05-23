@@ -39,6 +39,14 @@
   ansible.builtin.debug:
     var: pkg_result
 
+
+- name: check vscode Extensions
+  become: true
+  become_user: "{{ principaluser }}"
+  command: code --list-extensions
+  register: vscode_installed_extensions
+  changed_when: false
+
 - name: Install vscode Extensions
   become: true
   become_user: "{{ principaluser }}"
@@ -85,6 +93,7 @@
     - shakram02.bash-beautify
     - shd101wyy.markdown-preview-enhanced
     - timonwong.shellcheck
+  when: item not in vscode_installed_extensions.stdout
 
 - name: Ensure yq/jq are installed
   ansible.builtin.package:
