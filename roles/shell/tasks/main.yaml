@@ -62,4 +62,4 @@
     owner: "{{ principaluser }}"
     group: "{{ principaluser }}"
   with_fileglob:
-    - "templates/fish/*.j2"
+    - "templates/fish/*.fish"
