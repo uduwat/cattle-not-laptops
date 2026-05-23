@@ -6,7 +6,7 @@
     baseurl: https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64
     gpgcheck: 1
     gpgkey:
-      - gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+      - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
   register: yum_add_result
 - name: Display repository addition result
   ansible.builtin.debug:
