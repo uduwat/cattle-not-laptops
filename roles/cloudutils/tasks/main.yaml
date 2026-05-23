@@ -69,3 +69,27 @@
     group: "{{ principaluser }}"
     mode: '0755'
   become: true
+
+- name: Sync k9s plugins
+  ansible.builtin.git:
+    repo: https://github.com/GDClouders/Awesome-k9s-Plugins.git
+    dest: "/home/{{ principaluser }}/.Awesome-k9s-Plugins"
+  register: gitresult
+
+- name: Show k9s plugins results
+  ansible.builtin.debug:
+    var: gitresult
+
+- name: Apply k9s plugins
+  ansible.builtin.copy:
+    src: "/home/{{ principaluser }}/.Awesome-k9s-Plugins/plugins/"
+    dest: "/home/{{ principaluser }}/.config/k9s/plugins/"
+    mode: "0644"
+  when: gitresult.before != gitresult.after
+
+- name: Apply dumb plugin file
+  ansible.builtin.copy: 
+    src: "/home/{{ principaluser }}/.Awesome-k9s-Plugins/plugins.yaml"
+    dest: "/home/{{ principaluser }}/.config/k9s/plugins.yaml"
+    mode: "0644"
+  when: gitresult.before != gitresult.after
