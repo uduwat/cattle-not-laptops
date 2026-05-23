@@ -99,7 +99,7 @@
   register: result
   ignore_errors: true
 
-- name: 
+- name: Verification
   debug:
     msg: "Network Error or verify extension"
   when: result is failed

@@ -5,6 +5,11 @@
     state: present
   register: pkg_result
 
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
+
+
 - name: Ensure Shell plugins are installed
   ansible.builtin.package:
     name:
