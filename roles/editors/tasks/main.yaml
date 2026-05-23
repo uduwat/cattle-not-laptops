@@ -1,0 +1,64 @@
+- name: Ensure Editors are installed
+  ansible.builtin.package:
+    name:
+      - vim
+      - vim-minimal
+      - vim-enhanced
+    state: present
+  register: pkg_result
+
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
+
+
+- name: Add Microsoft VS Code repository
+  ansible.builtin.yum_repository:
+    name: vscode
+    description: Visual Studio Code
+    file: vscode
+    baseurl: https://packages.microsoft.com/yumrepos/vscode
+    gpgcheck: 1
+    gpgkey:
+      - https://packages.microsoft.com/keys/microsoft.asc
+  when: "'microsoft' not in ansible_kernel | lower"
+
+  register: yum_add_result
+- name: Display repository addition result
+  ansible.builtin.debug:
+    var: yum_add_result
+
+- name: Ensure VS Code is installed
+  ansible.builtin.package:
+    name:
+      - code
+    state: present
+  register: pkg_result
+  when: "'microsoft' not in ansible_kernel | lower"
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
+
+
+- name: Ensure yq/jq are installed
+  ansible.builtin.package:
+    name:
+      - yq
+      - jq
+    state: present
+  register: pkg_result
+
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
+
+- name: Ensure meld diff tool is installed
+  ansible.builtin.package:
+    name:
+      - meld
+    state: present
+  register: pkg_result
+
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
