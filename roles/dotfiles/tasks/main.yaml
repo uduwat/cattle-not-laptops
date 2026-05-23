@@ -35,7 +35,7 @@
   register: result
   ignore_errors: true
 
-- name: 
+- name: Verification 
   debug:
     msg: "Verify and sync dotfiles manually, timeout reached"
   when: result is failed
