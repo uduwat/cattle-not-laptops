@@ -17,6 +17,13 @@
   args:
     creates: "/home/{{ principaluser }}/.local/share/chezmoi"
 
+- name: Pull dotfiles repository
+  become: true
+  become_user: "{{ principaluser }}"
+  ansible.builtin.git:
+    repo: "{{ dotfiles_repo }}"
+    dest: "/home/{{ principaluser }}/.local/share/chezmoi"
+
 - name: Check chezmoi diff
   become: true
   become_user: "{{ principaluser }}"
