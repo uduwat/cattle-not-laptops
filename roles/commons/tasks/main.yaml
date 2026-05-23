@@ -1,4 +1,4 @@
-- name: Ensure Fish Shell is installed
+- name: Ensure commons are installed
   ansible.builtin.package:
     name:
       - openssl
