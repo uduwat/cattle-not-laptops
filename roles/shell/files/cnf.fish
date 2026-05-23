@@ -1,1 +1,0 @@
-alias 3.="kubectl cnf"

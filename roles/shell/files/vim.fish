@@ -1,1 +1,0 @@
-set -gx EDITOR /usr/sbin/vim

@@ -1,0 +1,32 @@
+- name: Ensure Dotfiles tools are installed
+  ansible.builtin.package:
+    name:
+      - git
+      - chezmoi
+      - git-lfs
+    state: present
+  register: pkg_result
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
+
+- name: Initialize chezmoi if not already
+  become: true
+  become_user: "{{ principaluser }}"
+  command: chezmoi init "{{ dotfiles_repo }}"
+  args:
+    creates: "/home/{{ principaluser }}/.local/share/chezmoi"
+
+- name: Check chezmoi diff
+  become: true
+  become_user: "{{ principaluser }}"
+  command: chezmoi diff
+  register: chezmoi_diff
+  changed_when: false
+  failed_when: false
+
+- name: Apply dotfile safely
+  become: true
+  become_user: "{{ principaluser }}"
+  command: chezmoi apply
+  when: chezmoi_diff.stdout | length == 0  
