@@ -28,5 +28,5 @@
 - name: Apply dotfile safely
   become: true
   become_user: "{{ principaluser }}"
-  command: chezmoi apply
-  when: chezmoi_diff.stdout | length == 0  
+  command: chezmoi apply --safe
+  when: chezmoi_diff.stdout | length != 0  
