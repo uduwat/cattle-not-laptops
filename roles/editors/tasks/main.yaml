@@ -47,6 +47,7 @@
   args:
     executable: /bin/bash
   loop:
+    - clutchsecurity.clutch-gitleaks-secrets-scanner
     - docker.docker
     - dotjoshjohnson.xml
     - dqisme.sync-scroll
@@ -65,15 +66,20 @@
     - ms-azuretools.vscode-docker
     - ms-kubernetes-tools.kind-vscode
     - ms-kubernetes-tools.vscode-kubernetes-tools
+    - ms-python.debugpy
+    - ms-python.python
+    - ms-python.vscode-pylance
+    - ms-python.vscode-python-envs
+    - ms-vscode.makefile-tools
+    - ms-vscode.remote-explorer
     - ms-vscode-remote.remote-containers
     - ms-vscode-remote.remote-ssh
     - ms-vscode-remote.remote-ssh-edit
-    - ms-vscode.makefile-tools
-    - ms-vscode.remote-explorer
     - nogic.nogic
     - oas2tree.oas2tree
     - opentofu.vscode-opentofu
     - pkief.material-icon-theme
+    - redhat.ansible
     - redhat.vscode-yaml
     - sandipchitale.vscode-kubernetes-edit-kubeconfig
     - shakram02.bash-beautify
