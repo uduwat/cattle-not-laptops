@@ -1,0 +1,9 @@
+- name: Ensure Fish Shell is installed
+  ansible.builtin.package:
+    name:
+      - openssl
+    state: present
+  register: pkg_result
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result

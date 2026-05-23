@@ -1,1 +1,2 @@
 principaluser: user-change-me
+dotfiles_repo: https://github.com/@yourUser/yourDotFilesRepo
