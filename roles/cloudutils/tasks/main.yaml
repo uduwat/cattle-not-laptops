@@ -1,0 +1,71 @@
+- name: Add Google Cloud CLI repository
+  ansible.builtin.yum_repository:
+    name: gcp-cli
+    description: Google Cloud CLI
+    file: google-cloud-sdk
+    baseurl: https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64
+    gpgcheck: 1
+    gpgkey:
+      - gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+  register: yum_add_result
+- name: Display repository addition result
+  ansible.builtin.debug:
+    var: yum_add_result
+
+- name: Ensure GCP CLI is installed
+  ansible.builtin.package:
+    name:
+      - google-cloud-cli
+      - google-cloud-cli-gke-gcloud-auth-plugin
+    state: present
+  register: pkg_result
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
+
+
+- name: Add Kubectl repository
+  ansible.builtin.yum_repository:
+    name: kubectl
+    description: Kubectl
+    file: kubectl
+    baseurl: https://pkgs.k8s.io/core:/stable:/v1.36/rpm/
+    gpgcheck: 1
+    gpgkey:
+      - https://pkgs.k8s.io/core:/stable:/v1.36/rpm/repodata/repomd.xml.key
+
+  register: yum_add_result
+- name: Display repository addition result
+  ansible.builtin.debug:
+    var: yum_add_result
+
+- name: Ensure kubectl is installed
+  ansible.builtin.package:
+    name:
+      - kubectl
+    state: present
+  register: pkg_result
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
+
+- name: Ensure Kubernetes TUI/GUI tools are installed
+  ansible.builtin.package:
+    name:
+      - k9s
+      - freelens
+    state: present
+  register: pkg_result
+- name: Display package installation result
+  ansible.builtin.debug:
+    var: pkg_result
+
+
+- name: Create kubeconfig ~/.kube/configs per principal user
+  ansible.builtin.file:
+    path: "/home/{{ principaluser }}/.kube/configs"
+    state: directory
+    owner: "{{ principaluser }}"
+    group: "{{ principaluser }}"
+    mode: '0755'
+  become: true
