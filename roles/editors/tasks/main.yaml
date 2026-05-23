@@ -94,6 +94,7 @@
     - shd101wyy.markdown-preview-enhanced
     - timonwong.shellcheck
   when: item not in vscode_installed_extensions.stdout
+  timeout: 30
 
 - name: Ensure yq/jq are installed
   ansible.builtin.package:
