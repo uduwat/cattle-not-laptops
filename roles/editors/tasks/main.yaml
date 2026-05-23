@@ -39,6 +39,46 @@
   ansible.builtin.debug:
     var: pkg_result
 
+- name: Install vscode Extensions
+  become: true
+  become_user: "{{ principaluser }}"
+  shell: |
+    code --install-extension {{ item }}
+  args:
+    executable: /bin/bash
+  loop:
+    - docker.docker
+    - dotjoshjohnson.xml
+    - dqisme.sync-scroll
+    - esbenp.prettier-vscode
+    - ffaraone.opensslutils
+    - github.copilot
+    - github.copilot-chat
+    - github.vscode-github-actions
+    - m4ns0ur.base64
+    - mechatroner.rainbow-csv
+    - mhutchie.git-graph
+    - michalhajny.kustomize-navigator
+    - mindaro-dev.file-downloader
+    - mindaro.mindaro
+    - ms-azuretools.vscode-containers
+    - ms-azuretools.vscode-docker
+    - ms-kubernetes-tools.kind-vscode
+    - ms-kubernetes-tools.vscode-kubernetes-tools
+    - ms-vscode-remote.remote-containers
+    - ms-vscode-remote.remote-ssh
+    - ms-vscode-remote.remote-ssh-edit
+    - ms-vscode.makefile-tools
+    - ms-vscode.remote-explorer
+    - nogic.nogic
+    - oas2tree.oas2tree
+    - opentofu.vscode-opentofu
+    - pkief.material-icon-theme
+    - redhat.vscode-yaml
+    - sandipchitale.vscode-kubernetes-edit-kubeconfig
+    - shakram02.bash-beautify
+    - shd101wyy.markdown-preview-enhanced
+    - timonwong.shellcheck
 
 - name: Ensure yq/jq are installed
   ansible.builtin.package:
