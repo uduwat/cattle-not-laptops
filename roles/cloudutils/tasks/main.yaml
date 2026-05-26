@@ -71,6 +71,7 @@
   become: true
 
 - name: Sync k9s plugins
+  become_user: "{{ principaluser }}"
   ansible.builtin.git:
     repo: https://github.com/GDClouders/Awesome-k9s-Plugins.git
     dest: "/home/{{ principaluser }}/.Awesome-k9s-Plugins"
@@ -88,8 +89,135 @@
   when: gitresult.before != gitresult.after
 
 - name: Apply dumb plugin file
-  ansible.builtin.copy: 
+  ansible.builtin.copy:
     src: "/home/{{ principaluser }}/.Awesome-k9s-Plugins/plugins.yaml"
     dest: "/home/{{ principaluser }}/.config/k9s/plugins.yaml"
     mode: "0644"
   when: gitresult.before != gitresult.after
+
+- name: Check if krew is already installed
+  become_user: "{{ principaluser }}"
+  stat:
+    path: "/home/{{ principaluser }}/.krew/bin/kubectl-krew"
+  register: krew_bin
+
+- name: Create temp directory
+  become_user: "{{ principaluser }}"
+  file:
+    path: /tmp/krew_install
+    state: directory
+    mode: '0755'
+  when: not krew_bin.stat.exists
+
+- name: Detect OS
+  set_fact:
+    krew_os: "{{ ansible_system | lower }}"
+  when: not krew_bin.stat.exists
+
+- name: Detect ARCH
+  set_fact:
+    krew_arch: >-
+      {% if ansible_architecture == "x86_64" %}
+        amd64
+      {% elif ansible_architecture in ["aarch64", "arm64"] %}
+        arm64
+      {% elif ansible_architecture is match("arm.*") %}
+        arm
+      {% else %}
+        {{ ansible_architecture }}
+      {% endif %}
+  when: not krew_bin.stat.exists
+
+- name: Set package name
+  set_fact:
+    krew_pkg: "krew-{{ krew_os }}_{{ krew_arch }}"
+  when: not krew_bin.stat.exists
+
+- name: Download krew
+  become_user: "{{ principaluser }}"
+  get_url:
+    url: "https://github.com/kubernetes-sigs/krew/releases/latest/download/{{ krew_pkg }}.tar.gz"
+    dest: "/tmp/krew_install/{{ krew_pkg }}.tar.gz"
+  when: not krew_bin.stat.exists
+
+- name: Extract archive
+  become_user: "{{ principaluser }}"
+  unarchive:
+    src: "/tmp/krew_install/{{ krew_pkg }}.tar.gz"
+    dest: "/tmp/krew_install"
+    remote_src: yes
+  when: not krew_bin.stat.exists
+
+- name: Install krew
+  become_user: "{{ principaluser }}"
+  command: "./{{ krew_pkg }} install krew"
+  args:
+    chdir: "/tmp/krew_install"
+  environment:
+    KREW_ROOT: "/home/{{ principaluser }}/.krew"
+  when: not krew_bin.stat.exists
+
+
+- name: Ensure PATH for current session
+  become_user: "{{ principaluser }}"
+  set_fact:
+    krew_path: "{{ principaluser }}/.krew/bin:{{ ansible_env.PATH }}"
+
+# ---- Plugin install ----
+
+- name: Update krew index
+  become_user: "{{ principaluser }}"
+  command: kubectl krew update
+  # environment:
+  #   PATH: "{{ krew_path }}"
+  changed_when: false
+
+- name: Add custom krew indexes
+  become: yes
+  become_user: "{{ principaluser }}"
+  environment:
+    PATH: "{{ krew_path }}"
+  loop:
+    - { name: kvaps, url: "https://github.com/kvaps/krew-index" }
+    - { name: kor, url: "https://github.com/yonahd/krew-index" }
+    - { name: retina, url: "https://github.com/microsoft/retina" }
+  command: kubectl krew index add {{ item.name }} {{ item.url }}
+  register: add_index
+  failed_when: false
+  changed_when: "'Added' in add_index.stdout"
+
+
+- name: Install krew plugins
+  become_user: "{{ principaluser }}"
+  command: kubectl krew install {{ item }}
+  # environment:
+  #   PATH: "{{ krew_path }}"
+  loop: 
+    - krew
+    - blame
+    - cnf
+    - crd-wizard
+    - df-pv
+    - exec-as
+    - flame
+    - kor
+    - kvaps/node-shell
+    - neat
+    - oidc-login
+    - oomd
+    - pod-lens
+    - retina
+    - stern
+    - virt
+  register: plugin_install
+  failed_when: false
+  changed_when: "'Installed' in plugin_install.stdout"
+
+# ---- Cleanup ----
+
+- name: Cleanup temp dir
+  become_user: "{{ principaluser }}"
+  file:
+    path: /tmp/krew_install
+    state: absent
+  when: not krew_bin.stat.exists
