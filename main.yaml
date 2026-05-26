@@ -13,3 +13,4 @@
     - cloudutils
     - filemanagers
     - gitcli
+    - secrets
