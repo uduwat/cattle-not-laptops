@@ -16,6 +16,7 @@
   command: chezmoi init "{{ dotfiles_repo }}"
   args:
     creates: "/home/{{ principaluser }}/.local/share/chezmoi"
+  when: dotfiles_repo | length > 0
 
 - name: Pull dotfiles repository
   become: true
@@ -23,6 +24,7 @@
   ansible.builtin.git:
     repo: "{{ dotfiles_repo }}"
     dest: "/home/{{ principaluser }}/.local/share/chezmoi"
+  when: dotfiles_repo | length > 0
 
 - name: Check chezmoi diff
   become: true
@@ -31,18 +33,23 @@
   register: chezmoi_diff
   changed_when: false
   failed_when: false
+  when: dotfiles_repo | length > 0
 
 - name: Apply dotfile safely
   become: true
   become_user: "{{ principaluser }}"
   command: chezmoi apply --safe
-  when: chezmoi_diff.stdout | length != 0  
+  when:
+    - dotfiles_repo | length > 0
+    - chezmoi_diff.stdout | length != 0
   async: 30
   poll: 5
   register: result
   ignore_errors: true
 
-- name: Verification 
+- name: Verification
   debug:
     msg: "Verify and sync dotfiles manually, timeout reached"
-  when: result is failed
+  when:
+    - dotfiles_repo | length > 0
+    - result is failed

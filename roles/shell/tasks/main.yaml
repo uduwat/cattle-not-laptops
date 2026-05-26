@@ -13,7 +13,6 @@
 - name: Ensure Shell plugins are installed
   ansible.builtin.package:
     name:
-      - ShellCheck
       - atuin
       - fzf
       - zoxide
