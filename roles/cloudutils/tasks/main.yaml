@@ -167,7 +167,7 @@
 
 - name: Update krew index
   become_user: "{{ principaluser }}"
-  command: kubectl krew update
+  command: "/home/{{ principaluser }}/.krew/bin/kubectl-krew update"
   # environment:
   #   PATH: "{{ krew_path }}"
   changed_when: false
@@ -181,7 +181,7 @@
     - { name: kvaps, url: "https://github.com/kvaps/krew-index" }
     - { name: kor, url: "https://github.com/yonahd/krew-index" }
     - { name: retina, url: "https://github.com/microsoft/retina" }
-  command: kubectl krew index add {{ item.name }} {{ item.url }}
+  command: "/home/{{ principaluser }}/.krew/bin/kubectl-krew index add {{ item.name }} {{ item.url }}"
   register: add_index
   failed_when: false
   changed_when: "'Added' in add_index.stdout"
@@ -189,7 +189,7 @@
 
 - name: Install krew plugins
   become_user: "{{ principaluser }}"
-  command: kubectl krew install {{ item }}
+  command: "/home/{{ principaluser }}/.krew/bin/kubectl-krew install {{ item }}"
   # environment:
   #   PATH: "{{ krew_path }}"
   loop: 
