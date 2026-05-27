@@ -1,9 +1,7 @@
 - name: Ensure Dotfiles tools are installed
   ansible.builtin.package:
     name:
-      - git
       - chezmoi
-      - git-lfs
     state: present
   register: pkg_result
 - name: Display package installation result

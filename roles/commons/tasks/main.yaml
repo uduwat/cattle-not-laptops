@@ -2,6 +2,10 @@
   ansible.builtin.package:
     name:
       - openssl
+      - copyq
+# eg: Not git cloned
+      - git
+      - git-lfs
     state: present
   register: pkg_result
 - name: Display package installation result
