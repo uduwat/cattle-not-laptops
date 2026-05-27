@@ -39,6 +39,19 @@
   ansible.builtin.debug:
     var: pkg_result
 
+- name: Where is code
+  become: true
+  become_user: "{{ principaluser }}"
+  shell: |
+    source ~/.profile 2>/dev/null || true
+    source ~/.bashrc 2>/dev/null || true
+    command -v code
+  args:
+    executable: /bin/bash -l
+  register: vscode_code_path
+  changed_when: false
+  failed_when: false
+
 
 - name: check vscode Extensions
   become: true
@@ -46,11 +59,13 @@
   command: code --list-extensions
   register: vscode_installed_extensions
   changed_when: false
+  when: vscode_code_path.stdout != ""
 
 - name: Install vscode Extensions
   become: true
   become_user: "{{ principaluser }}"
   shell: |
+    source ~/.
     code --install-extension {{ item }}
   args:
     executable: /bin/bash
@@ -93,7 +108,7 @@
     - shakram02.bash-beautify
     - shd101wyy.markdown-preview-enhanced
     - timonwong.shellcheck
-  when: item not in vscode_installed_extensions.stdout
+  when: vscode_code_path.stdout != "" and item not in vscode_installed_extensions.stdout
   async: 30
   poll: 5
   register: result
