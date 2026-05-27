@@ -111,57 +111,17 @@ else
 fi
 echo ""
 
-# ===== Step 5: Determine authentication method =====
-if [ -n "$dotfiles_repo" ]; then
-  info "Detecting authentication method..."
-  echo ""
-  
-  ssh_key_found=0
-  if [ -f ~/.ssh/id_ed25519 ]; then
-    success "Found SSH key: ~/.ssh/id_ed25519"
-    ssh_key_found=1
-  elif [ -f ~/.ssh/id_rsa ]; then
-    success "Found SSH key: ~/.ssh/id_rsa"
-    ssh_key_found=1
-  else
-    warn "No SSH keys found (~/.ssh/id_rsa or ~/.ssh/id_ed25519)"
-  fi
-  echo ""
-  
-  # If HTTPS URL and SSH key exists, offer conversion
-  if [ $ssh_key_found -eq 1 ] && [[ "$dotfiles_repo" == https://* ]]; then
-    echo "Your dotfiles repo is HTTPS, but SSH keys are available."
-    read -p "$(echo -e ${BLUE}'Convert to SSH URL?'${NC} '(y/n) [default: y]: ')" convert_ssh
-    convert_ssh=${convert_ssh:-y}
     
-    if [ "$convert_ssh" = "y" ]; then
-      # Convert https://github.com/user/repo.git -> git@github.com:user/repo.git
-      dotfiles_repo=$(echo "$dotfiles_repo" | sed 's|https://github.com/|git@github.com:|')
-      success "Converted to SSH: $dotfiles_repo"
-    fi
-  fi
-  
   # If no SSH key and still HTTPS with embedded PAT, keep it
   # If no SSH key and HTTPS without auth, prompt for PAT
-  if [ $ssh_key_found -eq 0 ] && [[ "$dotfiles_repo" == https://github.com/* ]] && [[ "$dotfiles_repo" != *"@"* ]]; then
-    echo ""
-    warn "No SSH keys detected. For private repos, provide a GitHub Personal Access Token."
-    echo "To create a PAT:"
-    echo "  1. Visit: https://github.com/settings/tokens"
-    echo "  2. Create token with 'repo' scope"
-    echo "  3. Enter PAT below (will be embedded in URL)"
-    echo ""
-    read -sp "$(echo -e ${BLUE}'GitHub PAT (leave empty for public repos)'${NC}': ')" pat
-    echo ""
+  
     
     if [ -n "$pat" ]; then
       # Insert PAT into URL: https://github.com/user/repo.git -> https://PAT@github.com/user/repo.git
       dotfiles_repo="https://${pat}@${dotfiles_repo#https://}"
       success "PAT configured"
     fi
-  fi
-  echo ""
-fi
+
 
 # ===== Step 6: Optional - Set up systemd timer =====
 info "Scheduled Provisioning (Optional)"
@@ -171,16 +131,25 @@ enable_timer=${enable_timer:-n}
 
 if [ "$enable_timer" = "y" ]; then
   # Strip PAT from dotfiles_repo for the systemd unit (security)
-  dotfiles_repo_safe=$(echo "$dotfiles_repo" | sed 's|https://[^@]*@|https://|')
-  if [ "$dotfiles_repo_safe" != "$dotfiles_repo" ]; then
-    warn "dotfiles_repo contains a PAT; stripped for systemd unit"
-    warn "Scheduled runs will need SSH key or credential helper configured"
-  fi
+  # dotfiles_repo_safe=$(echo "$dotfiles_repo" | sed 's|https://[^@]*@|https://|')
+  # if [ "$dotfiles_repo_safe" != "$dotfiles_repo" ]; then
+  #   warn "dotfiles_repo contains a PAT; stripped for systemd unit"
+  #   warn "Scheduled runs will need SSH key or credential helper configured"
+  # fi
 
-  mkdir -p ~/.config/systemd/user
 
+cat > /opt/ansipull-wrapper.sh <<EOF
+#!/bin/bash
+/usr/bin/ansible-pull \
+-U https://github.com/uduwat/cattle-not-laptops.git \
+-e principaluser=$principaluser \
+-e dotfiles_repo=${dotfiles_repo} \
+local.yml
+EOF
+
+chmod +x /opt/ansipull-wrapper.sh 
   # Create service file
-  cat > ~/.config/systemd/user/ansible-pull.service <<EOF
+cat > /etc/systemd/system/ansible-pull.service <<EOF
 [Unit]
 Description=Cattle Not Laptops - Automated Provisioning
 After=network-online.target
@@ -188,11 +157,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/ansible-pull \\
-  -U https://github.com/uduwat/cattle-not-laptops.git \\
-  -e principaluser=${principaluser} \\
-  -e dotfiles_repo=${dotfiles_repo_safe} \\
-  local.yml
+ExecStart=/opt/ansipull-wrapper.sh
 StandardOutput=journal
 StandardError=journal
 
@@ -201,12 +166,12 @@ WantedBy=multi-user.target
 EOF
 
   # Create timer file
-  cat > ~/.config/systemd/user/ansible-pull.timer <<EOF
+  cat > /etc/systemd/system/ansible-pull.timer <<EOF
 [Unit]
 Description=Cattle Not Laptops - Daily Scheduled Run
 
 [Timer]
-OnBootSec=5min
+OnBootSec=30min
 OnUnitActiveSec=1d
 Persistent=true
 
@@ -214,13 +179,13 @@ Persistent=true
 WantedBy=timers.target
 EOF
 
-  chmod 644 ~/.config/systemd/user/ansible-pull.{service,timer}
-  systemctl --user daemon-reload
-  systemctl --user enable ansible-pull.timer
-  systemctl --user start ansible-pull.timer
+  chmod 644 /etc/systemd/system/ansible-pull.{service,timer}
+  systemctl daemon-reload
+  systemctl enable ansible-pull.timer
+  systemctl start ansible-pull.timer
   success "Systemd timer installed and started"
-  info "To check timer status: systemctl --user status ansible-pull.timer"
-  info "To view logs: journalctl --user -u ansible-pull.service"
+  info "To check timer status: systemctl status ansible-pull.timer"
+  info "To view logs: journalctl -u ansible-pull.service"
 else
   warn "Skipping systemd timer setup"
 fi
@@ -268,7 +233,7 @@ if sudo "${ANSIBLE_PULL_CMD[@]}"; then
   echo ""
   if [ "$enable_timer" = "y" ]; then
     echo "Automatic daily runs are enabled."
-    echo "You can view logs with: journalctl --user -u ansible-pull.service"
+    echo "You can view logs with: journalctl -u ansible-pull.service"
   fi
   echo ""
   echo "For troubleshooting or more info, see: https://github.com/uduwat/cattle-not-laptops"
