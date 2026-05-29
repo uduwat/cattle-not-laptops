@@ -42,7 +42,7 @@
 - name: Where is code
   become: true
   become_user: "{{ principaluser }}"
-  shell: |
+  ansible.builtin.shell: |
     source ~/.profile 2>/dev/null || true
     source ~/.bashrc 2>/dev/null || true
     command -v code
@@ -56,7 +56,7 @@
 - name: check vscode Extensions
   become: true
   become_user: "{{ principaluser }}"
-  command: code --list-extensions
+  ansible.builtin.command: code --list-extensions
   register: vscode_installed_extensions
   changed_when: false
   when: vscode_code_path.stdout != ""
@@ -64,7 +64,7 @@
 - name: Install vscode Extensions
   become: true
   become_user: "{{ principaluser }}"
-  shell: |
+  ansible.builtin.shell: |
     source ~/.
     code --install-extension {{ item }}
   args:
@@ -115,7 +115,7 @@
   ignore_errors: true
 
 - name: Verification
-  debug:
+  ansible.builtin.debug:
     msg: "Network Error or verify extension"
   when: result is failed
 
