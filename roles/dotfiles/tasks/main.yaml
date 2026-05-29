@@ -11,7 +11,7 @@
 - name: Initialize chezmoi if not already
   become: true
   become_user: "{{ principaluser }}"
-  command: chezmoi init "{{ dotfiles_repo }}"
+  ansible.builtin.command: chezmoi init "{{ dotfiles_repo }}"
   args:
     creates: "/home/{{ principaluser }}/.local/share/chezmoi"
   when: dotfiles_repo | length > 0
@@ -27,7 +27,7 @@
 - name: Check chezmoi diff
   become: true
   become_user: "{{ principaluser }}"
-  command: chezmoi diff
+  ansible.builtin.command: chezmoi diff
   register: chezmoi_diff
   changed_when: false
   failed_when: false
@@ -36,7 +36,7 @@
 - name: Apply dotfile safely
   become: true
   become_user: "{{ principaluser }}"
-  command: chezmoi apply --safe
+  ansible.builtin.command: chezmoi apply --safe
   when:
     - dotfiles_repo | length > 0
     - chezmoi_diff.stdout | length != 0
@@ -46,8 +46,9 @@
   ignore_errors: true
 
 - name: Verification
-  debug:
+  ansible.builtin.debug:
     msg: "Verify and sync dotfiles manually, timeout reached"
   when:
     - dotfiles_repo | length > 0
     - result is failed
+  
