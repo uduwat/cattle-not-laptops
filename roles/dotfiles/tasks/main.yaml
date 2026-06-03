@@ -22,7 +22,13 @@
   ansible.builtin.git:
     repo: "{{ dotfiles_repo }}"
     dest: "/home/{{ principaluser }}/.local/share/chezmoi"
+    register: git_result
   when: dotfiles_repo | length > 0
+  changed_when: git_result.changed
+
+- name: Display git result
+  ansible.builtin.debug:
+    var: git_result
 
 - name: Check chezmoi diff
   become: true
@@ -51,4 +57,4 @@
   when:
     - dotfiles_repo | length > 0
     - result is failed
-  
+
