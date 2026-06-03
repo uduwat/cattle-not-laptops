@@ -144,7 +144,7 @@ cat > /opt/ansipull-wrapper.sh <<EOF
 -U https://github.com/uduwat/cattle-not-laptops.git \
 -e principaluser=$principaluser \
 -e dotfiles_repo=${dotfiles_repo} \
--e ansible_shell_executable="/bin/bash -l"
+-e ansible_shell_executable="/bin/bash -l" \
 local.yml
 EOF
 
