@@ -22,9 +22,9 @@
   ansible.builtin.git:
     repo: "{{ dotfiles_repo }}"
     dest: "/home/{{ principaluser }}/.local/share/chezmoi"
-    register: git_result
+    update: true
+  register: git_result
   when: dotfiles_repo | length > 0
-  changed_when: git_result.changed
 
 - name: Display git result
   ansible.builtin.debug:
