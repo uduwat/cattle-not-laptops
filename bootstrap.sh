@@ -69,6 +69,10 @@ else
 fi
 echo ""
 
+info "Install Ansible collections"
+ansible-galaxy collection install -r requirements.yaml
+
+
 # ===== Step 3: Prompt for principaluser =====
 info "Configuration Setup"
 echo ""
