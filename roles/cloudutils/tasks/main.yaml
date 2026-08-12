@@ -136,7 +136,7 @@
 
 - name: Set package name
   set_fact:
-    krew_pkg: "krew-{{ krew_os }}_{{ krew_arch }}"
+    krew_pkg: "krew-{{ krew_os }}_{{ krew_arch | trim }}"
   when: not krew_bin.stat.exists
 
 - name: Download krew
