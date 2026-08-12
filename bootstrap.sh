@@ -152,7 +152,7 @@ sudo tee /opt/ansipull-wrapper.sh <<EOF
 local.yml
 EOF
 
-chmod +x /opt/ansipull-wrapper.sh 
+sudo chmod +x /opt/ansipull-wrapper.sh 
   # Create service file
 sudo tee /etc/systemd/system/ansible-pull.service <<EOF
 [Unit]
@@ -184,10 +184,10 @@ Persistent=true
 WantedBy=timers.target
 EOF
 
-  chmod 644 /etc/systemd/system/ansible-pull.{service,timer}
-  systemctl daemon-reload
-  systemctl enable ansible-pull.timer
-  systemctl start ansible-pull.timer
+  sudo chmod 644 /etc/systemd/system/ansible-pull.{service,timer}
+  sudo systemctl daemon-reload
+  sudo systemctl enable ansible-pull.timer
+  sudo systemctl start ansible-pull.timer
   success "Systemd timer installed and started"
   info "To check timer status: systemctl status ansible-pull.timer"
   info "To view logs: journalctl -u ansible-pull.service"
