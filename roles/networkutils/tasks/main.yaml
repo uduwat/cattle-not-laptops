@@ -15,7 +15,7 @@
 - name: Sync fortheducksakeproxyswitch
   become_user: "{{ principaluser }}"
   ansible.builtin.git:
-    repo: https://github.com/GDClouders/fortheducksakeproxyswitch.git
+    repo: https://github.com/uduwat/fortheducksakeproxyswitch.git
     dest: "/home/{{ principaluser }}/.fortheducksakeproxyswitch"
   register: gitresult
 
