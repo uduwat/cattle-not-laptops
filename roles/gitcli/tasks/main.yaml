@@ -1,10 +1,12 @@
 - name: Ensure git cli tools are installed
   ansible.builtin.package:
-    name:
-      - glab
-      - gh
+    name: "{{ item }}"
     state: present
+  loop:
+    - glab
+    - gh
   register: pkg_result
+  failed_when: false
 - name: Display package installation result
   ansible.builtin.debug:
     var: pkg_result

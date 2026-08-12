@@ -14,11 +14,13 @@
 
 - name: Ensure GCP CLI is installed
   ansible.builtin.package:
-    name:
-      - google-cloud-cli
-      - google-cloud-cli-gke-gcloud-auth-plugin
+    name: "{{ item }}"
     state: present
+  loop:
+    - google-cloud-cli
+    - google-cloud-cli-gke-gcloud-auth-plugin
   register: pkg_result
+  failed_when: false
 - name: Display package installation result
   ansible.builtin.debug:
     var: pkg_result
@@ -41,21 +43,25 @@
 
 - name: Ensure kubectl is installed
   ansible.builtin.package:
-    name:
-      - kubectl
+    name: "{{ item }}"
     state: present
+  loop:
+    - kubectl
   register: pkg_result
+  failed_when: false
 - name: Display package installation result
   ansible.builtin.debug:
     var: pkg_result
 
 - name: Ensure Kubernetes TUI/GUI tools are installed
   ansible.builtin.package:
-    name:
-      - k9s
-      - freelens
+    name: "{{ item }}"
     state: present
+  loop:
+    - k9s
+    - freelens
   register: pkg_result
+  failed_when: false
 - name: Display package installation result
   ansible.builtin.debug:
     var: pkg_result

@@ -1,10 +1,12 @@
 - name: Ensure FileManagers are installed
   ansible.builtin.package:
-    name:
-      - doublecmd-qt
-      - mc
+    name: "{{ item }}"
     state: present
+  loop:
+    - doublecmd-qt
+    - mc
   register: pkg_result
+  failed_when: false
 - name: Display package installation result
   ansible.builtin.debug:
     var: pkg_result

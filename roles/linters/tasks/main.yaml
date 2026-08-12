@@ -1,10 +1,12 @@
 - name: Ensure Linters for syntax checking are installed
   ansible.builtin.package:
-    name:
-      - shellcheck
-      - yamllint
+    name: "{{ item }}"
     state: present
+  loop:
+    - shellcheck
+    - yamllint
   register: pkg_result
+  failed_when: false
 
 - name: Display package installation result
   ansible.builtin.debug:

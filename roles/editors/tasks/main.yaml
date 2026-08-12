@@ -1,11 +1,13 @@
 - name: Ensure Editors are installed
   ansible.builtin.package:
-    name:
-      - vim
-      - vim-minimal
-      - vim-enhanced
+    name: "{{ item }}"
     state: present
+  loop:
+    - vim
+    - vim-minimal
+    - vim-enhanced
   register: pkg_result
+  failed_when: false
 
 - name: Display package installation result
   ansible.builtin.debug:
@@ -30,10 +32,12 @@
 
 - name: Ensure VS Code is installed
   ansible.builtin.package:
-    name:
-      - code
+    name: "{{ item }}"
     state: present
+  loop:
+    - code
   register: pkg_result
+  failed_when: false
   when: "'microsoft' not in ansible_kernel | lower"
 - name: Display package installation result
   ansible.builtin.debug:
@@ -121,11 +125,13 @@
 
 - name: Ensure yq/jq are installed
   ansible.builtin.package:
-    name:
-      - yq
-      - jq
+    name: "{{ item }}"
     state: present
+  loop:
+    - yq
+    - jq
   register: pkg_result
+  failed_when: false
 
 - name: Display package installation result
   ansible.builtin.debug:
@@ -133,10 +139,12 @@
 
 - name: Ensure meld diff tool is installed
   ansible.builtin.package:
-    name:
-      - meld
+    name: "{{ item }}"
     state: present
+  loop:
+    - meld
   register: pkg_result
+  failed_when: false
 
 - name: Display package installation result
   ansible.builtin.debug:

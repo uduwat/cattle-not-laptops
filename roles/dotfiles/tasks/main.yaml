@@ -1,9 +1,11 @@
 - name: Ensure Dotfiles tools are installed
   ansible.builtin.package:
-    name:
-      - chezmoi
+    name: "{{ item }}"
     state: present
+  loop:
+    - chezmoi
   register: pkg_result
+  failed_when: false
 - name: Display package installation result
   ansible.builtin.debug:
     var: pkg_result

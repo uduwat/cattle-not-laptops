@@ -1,13 +1,15 @@
 - name: Ensure commons are installed
   ansible.builtin.package:
-    name:
-      - openssl
-      - copyq
-# eg: Not git cloned
-      - git
-      - git-lfs
+    name: "{{ item }}"
     state: present
+  loop:
+    - openssl
+    - copyq
+# eg: Not git cloned
+    - git
+    - git-lfs
   register: pkg_result
+  failed_when: false
 - name: Display package installation result
   ansible.builtin.debug:
     var: pkg_result

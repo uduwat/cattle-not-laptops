@@ -1,9 +1,11 @@
 - name: Ensure Fish Shell is installed
   ansible.builtin.package:
-    name:
-      - fish
+    name: "{{ item }}"
     state: present
+  loop:
+    - fish
   register: pkg_result
+  failed_when: false
 
 - name: Display package installation result
   ansible.builtin.debug:
@@ -12,17 +14,19 @@
 
 - name: Ensure Shell plugins are installed
   ansible.builtin.package:
-    name:
-      - atuin
-      - fzf
-      - zoxide
-      - asciinema
-      - bat
-      - btop
-      - ccze
-      - htop
+    name: "{{ item }}"
     state: present
+  loop:
+    - atuin
+    - fzf
+    - zoxide
+    - asciinema
+    - bat
+    - btop
+    - ccze
+    - htop
   register: pkg_result
+  failed_when: false
 
 - name: Display package installation result
   ansible.builtin.debug:
