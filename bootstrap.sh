@@ -142,7 +142,7 @@ if [ "$enable_timer" = "y" ]; then
   # fi
 
 
-cat > /opt/ansipull-wrapper.sh <<EOF
+sudo tee /opt/ansipull-wrapper.sh <<EOF
 #!/bin/bash
 /usr/bin/ansible-pull \
 -U https://github.com/uduwat/cattle-not-laptops.git \
@@ -154,7 +154,7 @@ EOF
 
 chmod +x /opt/ansipull-wrapper.sh 
   # Create service file
-cat > /etc/systemd/system/ansible-pull.service <<EOF
+sudo tee /etc/systemd/system/ansible-pull.service <<EOF
 [Unit]
 Description=Cattle Not Laptops - Automated Provisioning
 After=network-online.target
@@ -171,7 +171,7 @@ WantedBy=multi-user.target
 EOF
 
   # Create timer file
-  cat > /etc/systemd/system/ansible-pull.timer <<EOF
+  sudo tee /etc/systemd/system/ansible-pull.timer <<EOF
 [Unit]
 Description=Cattle Not Laptops - Daily Scheduled Run
 
