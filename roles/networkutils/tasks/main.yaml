@@ -11,3 +11,14 @@
 - name: Display package installation result
   ansible.builtin.debug:
     var: pkg_result
+
+- name: Sync fortheducksakeproxyswitch
+  become_user: "{{ principaluser }}"
+  ansible.builtin.git:
+    repo: https://github.com/GDClouders/fortheducksakeproxyswitch.git
+    dest: "/home/{{ principaluser }}/.fortheducksakeproxyswitch"
+  register: gitresult
+
+- name: Show fortheducksakeproxyswitch results
+  ansible.builtin.debug:
+    var: gitresult
