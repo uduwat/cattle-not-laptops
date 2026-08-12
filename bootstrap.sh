@@ -76,12 +76,12 @@ ansible-galaxy collection install -r requirements.yaml
 # ===== Step 3: Prompt for principaluser =====
 info "Configuration Setup"
 echo ""
-read -p "$(echo -e ${BLUE}'Principal user'${NC} '[default: '$USER']: ')" principaluser
+read -p "$(echo -e ${BLUE}'Principal user'${NC} '[default: '$USER']: ')" principaluser < /dev/tty
 principaluser=${principaluser:-$USER}
 
 if ! id "$principaluser" &>/dev/null; then
   warn "User '$principaluser' does not exist on this system"
-  read -p "Create user '$principaluser'? (y/n) [default: y]: " create_user
+  read -p "Create user '$principaluser'? (y/n) [default: y]: " create_user < /dev/tty
   if [ "$create_user" != "n" ]; then
     info "User creation is not yet automated. Please create manually:"
     echo "  sudo useradd -m -s /bin/bash $principaluser"
@@ -104,7 +104,7 @@ if [ -n "$DOTFILES_REPO" ]; then
   success "Using DOTFILES_REPO from environment: $dotfiles_repo"
 else
   echo ""
-  read -p "$(echo -e ${BLUE}'Dotfiles repo URL'${NC} '(press Enter to skip): ')" dotfiles_repo
+  read -p "$(echo -e ${BLUE}'Dotfiles repo URL'${NC} '(press Enter to skip): ')" dotfiles_repo < /dev/tty
   
   if [ -z "$dotfiles_repo" ]; then
     warn "Skipping dotfiles (will use default shell/editor config)"
@@ -130,7 +130,7 @@ echo ""
 # ===== Step 6: Optional - Set up systemd timer =====
 info "Scheduled Provisioning (Optional)"
 echo ""
-read -p "$(echo -e ${BLUE}'Enable daily scheduled runs?'${NC} '(y/n) [default: n]: ')" enable_timer
+read -p "$(echo -e ${BLUE}'Enable daily scheduled runs?'${NC} '(y/n) [default: n]: ')" enable_timer < /dev/tty
 enable_timer=${enable_timer:-n}
 
 if [ "$enable_timer" = "y" ]; then
