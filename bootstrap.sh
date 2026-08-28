@@ -165,6 +165,8 @@ Type=oneshot
 ExecStart=/opt/ansipull-wrapper.sh
 StandardOutput=journal
 StandardError=journal
+Environment="ANSIBLE_LOG_PATH=/var/log/ansipull-wrapper.log"
+Environment="ANSIBLE_CALLBACK_RESULT_FORMAT=yaml"
 
 [Install]
 WantedBy=multi-user.target
