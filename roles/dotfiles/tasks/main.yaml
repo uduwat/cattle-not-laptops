@@ -10,6 +10,28 @@
   ansible.builtin.debug:
     var: pkg_result
 
+- name: Create chezmoi config directory
+  become: true
+  ansible.builtin.file:
+    path: "/home/{{ principaluser }}/.config/chezmoi"
+    state: directory
+    owner: "{{ principaluser }}"
+    group: "{{ principaluser }}"
+    mode: "0700"
+    
+- name: Configure chezmoi encryption
+  become: true
+  ansible.builtin.copy:
+    dest: "/home/{{ principaluser }}/.config/chezmoi/chezmoi.toml"
+    owner: "{{ principaluser }}"
+    group: "{{ principaluser }}"
+    mode: "0600"
+    content: |
+      encryption = "age"
+
+      [age]
+      identity = "/home/{{ principaluser }}/.config/chezmoi/key.txt"
+    
 - name: Initialize chezmoi if not already
   become: true
   become_user: "{{ principaluser }}"
