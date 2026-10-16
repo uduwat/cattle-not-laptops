@@ -8,6 +8,8 @@
 # eg: Not git cloned
     - git
     - git-lfs
+    - onedrive
+    - rclone
   register: pkg_result
   failed_when: false
 - name: Display package installation result
