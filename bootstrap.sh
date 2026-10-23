@@ -92,6 +92,13 @@ if ! id "$principaluser" &>/dev/null; then
   fi
 fi
 
+
+read -r -p "$(echo -e "${BLUE}age public recipient${NC}: ")" age_recipient < /dev/tty
+if [ -z "$age_recipient" ]; then
+  error "An age public recipient is required"
+  exit 1
+fi
+
 success "Using principaluser: $principaluser"
 echo ""
 
@@ -142,12 +149,15 @@ if [ "$enable_timer" = "y" ]; then
   # fi
 
 
+printf -v age_recipient_arg '%q' "age_recipient=${age_recipient}"
+
 sudo tee /opt/ansipull-wrapper.sh <<EOF
 #!/bin/bash
 /usr/bin/ansible-pull \
 -U https://github.com/uduwat/cattle-not-laptops.git \
 -e principaluser=$principaluser \
 -e dotfiles_repo=${dotfiles_repo} \
+-e ${age_recipient_arg} \
 -e ansible_shell_executable="/bin/bash -l" \
 local.yml
 EOF
@@ -210,6 +220,7 @@ ANSIBLE_PULL_CMD=(
   "-U" "https://github.com/uduwat/cattle-not-laptops.git"
   "-e" "principaluser=${principaluser}"
   "-e" "dotfiles_repo=${dotfiles_repo}"
+  "-e" "age_recipient=${age_recipient}"
   "-e" "ansible_shell_executable='/bin/bash -l'"
   "--accept-host-key"
   "-v"
