@@ -31,7 +31,7 @@
 
       [age]
       identity = "/home/{{ principaluser }}/.config/chezmoi/key.txt"
-    
+      recipient = "{{ age_recipient }}"
 - name: Initialize chezmoi if not already
   become: true
   become_user: "{{ principaluser }}"
