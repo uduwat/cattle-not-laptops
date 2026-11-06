@@ -29,13 +29,13 @@ This project automates the setup of your development environment by installing c
  ```bash
  ./bootstrap.sh
  ```
- The script will guide you through checking your OS, installing necessary tools like Ansible and Git, and prompting for user-specific configurations such as your principal user and dotfiles repository.
+ The script will guide you through checking your OS, installing necessary tools like Ansible and Git, and prompting for user-specific configurations such as your principal user, age recipient, and dotfiles repository.
 
  If you encounter issues or need to re-run the provisioning, you can use `ansible-pull` directly:
  ```bash
- ansible-pull -U https://github.com/uduwat/cattle-not-laptops.git -e "principaluser=<your_username>" -e "dotfiles_repo=<your_dotfiles_repo_url>" -e "ansible_shell_executable='/bin/bash -l'" --accept-host-key -v local.yml
+ ansible-pull -U https://github.com/uduwat/cattle-not-laptops.git -e "principaluser=<your_username>" -e "age_recipient=<your_age_public_recipient>" -e "dotfiles_repo=<your_dotfiles_repo_url>" -e "ansible_shell_executable='/bin/bash -l'" --accept-host-key -v local.yml
  ```
- Replace `<your_username>` with your actual username and `<your_dotfiles_repo_url>` with the URL of your dotfiles repository if you are using one.
+ Replace `<your_username>` with your actual username, `<your_age_public_recipient>` with your age public recipient, and `<your_dotfiles_repo_url>` with the URL of your dotfiles repository if you are using one.
 
 ## Project Structure
 

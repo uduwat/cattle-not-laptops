@@ -6,7 +6,9 @@
     - glab
     - gh
   register: pkg_result
-  failed_when: false
-- name: Display package installation result
+  ignore_errors: true
+- name: Report package installation failures
   ansible.builtin.debug:
-    var: pkg_result
+    msg: "{{ ('FAILED packages: ' ~ (failed_pkgs | join(', '))) if failed_pkgs else 'All packages installed' }}"
+  vars:
+    failed_pkgs: "{{ pkg_result.results | selectattr('failed', 'defined') | selectattr('failed') | map(attribute='item') | list }}"

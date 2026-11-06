@@ -7,11 +7,13 @@
     - vim-minimal
     - vim-enhanced
   register: pkg_result
-  failed_when: false
+  ignore_errors: true
 
-- name: Display package installation result
+- name: Report package installation failures
   ansible.builtin.debug:
-    var: pkg_result
+    msg: "{{ ('FAILED packages: ' ~ (failed_pkgs | join(', '))) if failed_pkgs else 'All packages installed' }}"
+  vars:
+    failed_pkgs: "{{ pkg_result.results | selectattr('failed', 'defined') | selectattr('failed') | map(attribute='item') | list }}"
 
 
 - name: Add Microsoft VS Code repository
@@ -37,11 +39,13 @@
   loop:
     - code
   register: pkg_result
-  failed_when: false
+  ignore_errors: true
   when: "'microsoft' not in ansible_kernel | lower"
-- name: Display package installation result
+- name: Report package installation failures
   ansible.builtin.debug:
-    var: pkg_result
+    msg: "{{ ('FAILED packages: ' ~ (failed_pkgs | join(', '))) if failed_pkgs else 'All packages installed' }}"
+  vars:
+    failed_pkgs: "{{ pkg_result.results | selectattr('failed', 'defined') | selectattr('failed') | map(attribute='item') | list }}"
 
 - name: Where is code
   become: true
@@ -131,11 +135,13 @@
     - yq
     - jq
   register: pkg_result
-  failed_when: false
+  ignore_errors: true
 
-- name: Display package installation result
+- name: Report package installation failures
   ansible.builtin.debug:
-    var: pkg_result
+    msg: "{{ ('FAILED packages: ' ~ (failed_pkgs | join(', '))) if failed_pkgs else 'All packages installed' }}"
+  vars:
+    failed_pkgs: "{{ pkg_result.results | selectattr('failed', 'defined') | selectattr('failed') | map(attribute='item') | list }}"
 
 - name: Ensure meld diff tool is installed
   ansible.builtin.package:
@@ -144,8 +150,10 @@
   loop:
     - meld
   register: pkg_result
-  failed_when: false
+  ignore_errors: true
 
-- name: Display package installation result
+- name: Report package installation failures
   ansible.builtin.debug:
-    var: pkg_result
+    msg: "{{ ('FAILED packages: ' ~ (failed_pkgs | join(', '))) if failed_pkgs else 'All packages installed' }}"
+  vars:
+    failed_pkgs: "{{ pkg_result.results | selectattr('failed', 'defined') | selectattr('failed') | map(attribute='item') | list }}"

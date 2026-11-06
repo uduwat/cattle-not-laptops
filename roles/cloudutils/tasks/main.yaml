@@ -20,10 +20,12 @@
     - google-cloud-cli
     - google-cloud-cli-gke-gcloud-auth-plugin
   register: pkg_result
-  failed_when: false
-- name: Display package installation result
+  ignore_errors: true
+- name: Report package installation failures
   ansible.builtin.debug:
-    var: pkg_result
+    msg: "{{ ('FAILED packages: ' ~ (failed_pkgs | join(', '))) if failed_pkgs else 'All packages installed' }}"
+  vars:
+    failed_pkgs: "{{ pkg_result.results | selectattr('failed', 'defined') | selectattr('failed') | map(attribute='item') | list }}"
 
 
 - name: Add Kubectl repository
@@ -31,11 +33,12 @@
     name: kubectl
     description: Kubectl
     file: kubectl
-    baseurl: https://pkgs.k8s.io/core:/stable:/v1.36/rpm/
+    baseurl: "https://pkgs.k8s.io/core:/stable:/{{ kubectl_version }}/rpm/"
     gpgcheck: 1
     gpgkey:
-      - https://pkgs.k8s.io/core:/stable:/v1.36/rpm/repodata/repomd.xml.key
-
+      - "https://pkgs.k8s.io/core:/stable:/{{ kubectl_version }}/rpm/repodata/repomd.xml.key"
+  vars:
+    kubectl_version: v1.36
   register: yum_add_result
 - name: Display repository addition result
   ansible.builtin.debug:
@@ -48,10 +51,12 @@
   loop:
     - kubectl
   register: pkg_result
-  failed_when: false
-- name: Display package installation result
+  ignore_errors: true
+- name: Report package installation failures
   ansible.builtin.debug:
-    var: pkg_result
+    msg: "{{ ('FAILED packages: ' ~ (failed_pkgs | join(', '))) if failed_pkgs else 'All packages installed' }}"
+  vars:
+    failed_pkgs: "{{ pkg_result.results | selectattr('failed', 'defined') | selectattr('failed') | map(attribute='item') | list }}"
 
 - name: Ensure Kubernetes TUI/GUI tools are installed
   ansible.builtin.package:
@@ -61,10 +66,12 @@
     - k9s
     - freelens
   register: pkg_result
-  failed_when: false
-- name: Display package installation result
+  ignore_errors: true
+- name: Report package installation failures
   ansible.builtin.debug:
-    var: pkg_result
+    msg: "{{ ('FAILED packages: ' ~ (failed_pkgs | join(', '))) if failed_pkgs else 'All packages installed' }}"
+  vars:
+    failed_pkgs: "{{ pkg_result.results | selectattr('failed', 'defined') | selectattr('failed') | map(attribute='item') | list }}"
 
 
 - name: Create kubeconfig ~/.kube/configs per principal user

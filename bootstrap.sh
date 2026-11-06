@@ -25,6 +25,11 @@ error() {
   echo -e "${RED}✗ ${NC}$1"
 }
 
+# Escape a value as a single-quoted YAML scalar (for the Ansible vars file)
+yaml_quote() {
+  printf "'%s'" "$(printf '%s' "$1" | sed "s/'/''/g")"
+}
+
 # Header
 echo ""
 echo -e "${GREEN}╔═══════════════════════════════════════════╗${NC}"
@@ -70,7 +75,12 @@ fi
 echo ""
 
 info "Install Ansible collections"
-ansible-galaxy collection install -r requirements.yaml
+if [ -f requirements.yaml ]; then
+  ansible-galaxy collection install -r requirements.yaml
+else
+  # Running via `curl ... | bash` without a checkout: install the only required collection
+  ansible-galaxy collection install ansible.posix
+fi
 
 
 # ===== Step 3: Prompt for principaluser =====
@@ -118,51 +128,40 @@ else
     dotfiles_repo=""
   else
     success "Using dotfiles repo: $dotfiles_repo"
+    info "Private repo: include credentials in the URL (e.g. https://TOKEN@github.com/user/dotfiles.git)"
   fi
 fi
 echo ""
 
-    
-  # If no SSH key and still HTTPS with embedded PAT, keep it
-  # If no SSH key and HTTPS without auth, prompt for PAT
-  
-    
-    if [ -n "$pat" ]; then
-      # Insert PAT into URL: https://github.com/user/repo.git -> https://PAT@github.com/user/repo.git
-      dotfiles_repo="https://${pat}@${dotfiles_repo#https://}"
-      success "PAT configured"
-    fi
-
-
-# ===== Step 6: Optional - Set up systemd timer =====
+# ===== Step 5: Optional - Set up systemd timer =====
 info "Scheduled Provisioning (Optional)"
 echo ""
 read -p "$(echo -e ${BLUE}'Enable daily scheduled runs?'${NC} '(y/n) [default: n]: ')" enable_timer < /dev/tty
 enable_timer=${enable_timer:-n}
 
 if [ "$enable_timer" = "y" ]; then
-  # Strip PAT from dotfiles_repo for the systemd unit (security)
-  # dotfiles_repo_safe=$(echo "$dotfiles_repo" | sed 's|https://[^@]*@|https://|')
-  # if [ "$dotfiles_repo_safe" != "$dotfiles_repo" ]; then
-  #   warn "dotfiles_repo contains a PAT; stripped for systemd unit"
-  #   warn "Scheduled runs will need SSH key or credential helper configured"
-  # fi
+  case "$dotfiles_repo" in
+    *://*@*) warn "dotfiles_repo contains credentials; /opt/ansipull.env will store them in plain text" ;;
+  esac
 
+  # Ansible variables live in their own file, loaded with: -e @/opt/ansipull.env
+  {
+    printf 'principaluser: %s\n' "$(yaml_quote "$principaluser")"
+    printf 'dotfiles_repo: %s\n' "$(yaml_quote "$dotfiles_repo")"
+    printf 'age_recipient: %s\n' "$(yaml_quote "$age_recipient")"
+    printf 'ansible_shell_executable: %s\n' "$(yaml_quote "/bin/bash -l")"
+  } | sudo tee /opt/ansipull.env >/dev/null
+  sudo chmod 600 /opt/ansipull.env
 
-printf -v age_recipient_arg '%q' "age_recipient=${age_recipient}"
-
-sudo tee /opt/ansipull-wrapper.sh <<EOF
+  sudo tee /opt/ansipull-wrapper.sh >/dev/null <<'EOF'
 #!/bin/bash
 /usr/bin/ansible-pull \
 -U https://github.com/uduwat/cattle-not-laptops.git \
--e principaluser=$principaluser \
--e dotfiles_repo=${dotfiles_repo} \
--e ${age_recipient_arg} \
--e ansible_shell_executable="/bin/bash -l" \
+-e @/opt/ansipull.env \
 local.yml
 EOF
-
-sudo chmod +x /opt/ansipull-wrapper.sh 
+  sudo chmod 700 /opt/ansipull-wrapper.sh
+  info "Variables file: /opt/ansipull.env"
   # Create service file
 sudo tee /etc/systemd/system/ansible-pull.service <<EOF
 [Unit]
@@ -208,7 +207,7 @@ else
 fi
 echo ""
 
-# ===== Step 7: Run ansible-pull =====
+# ===== Step 6: Run ansible-pull =====
 echo -e "${GREEN}════════════════════════════════════════════${NC}"
 info "Running ansible-pull..."
 echo -e "${GREEN}════════════════════════════════════════════${NC}"
