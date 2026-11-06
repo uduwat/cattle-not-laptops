@@ -44,6 +44,8 @@ This project automates the setup of your development environment by installing c
 ├── bootstrap.sh
 ├── local.yml
 ├── requirements.yaml
+├── scripts/
+│   └── provision-report.sh
 └── roles/
  ├── cloudutils/
  ├── commons/
@@ -62,6 +64,7 @@ This project automates the setup of your development environment by installing c
 
 * **`local.yml`**: This is the main Ansible playbook that orchestrates the entire provisioning process. It defines the order in which roles are applied to the system.
 * **`bootstrap.sh`**: A shell script that automates the initial setup, including checking system compatibility, installing Ansible and Git, and prompting for user-specific variables before running `ansible-pull`.
+* **`scripts/provision-report.sh`**: Runs Ansible with JSONL events, shows a readable live log, and writes the final report (installed/updated, modified, removed, ignored, failed, skipped) to `/var/log/ansipull-report.log` and the journal. Bootstrap installs it as `/opt/ansipull-report.sh` and the scheduled wrapper runs it at the end of every provisioning.
 * **Roles (`roles/`)**: Ansible roles are used to group related tasks. Each directory within `roles/` represents a distinct set of configurations or installations (e.g., `shell/` for shell configurations, `editors/` for text editors).
 * **`requirements.yaml`**: Specifies Ansible collections that need to be installed for the playbooks to function correctly.
 * **Chezmoi (`roles/dotfiles/`)**: This role manages your dotfiles. It uses Chezmoi to pull configurations from a specified Git repository, ensuring your personal settings are applied consistently. The `dotfiles_repo` variable, passed during `ansible-pull`, is crucial for this.

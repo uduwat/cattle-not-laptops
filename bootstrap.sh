@@ -72,6 +72,14 @@ if ! command -v git &> /dev/null; then
 else
   success "git already installed"
 fi
+
+if ! command -v jq &> /dev/null; then
+  warn "jq not found; installing..."
+  sudo dnf install -y jq
+  success "jq installed"
+else
+  success "jq already installed"
+fi
 echo ""
 
 info "Install Ansible collections"
@@ -81,6 +89,27 @@ else
   # Running via `curl ... | bash` without a checkout: install the only required collection
   ansible-galaxy collection install ansible.posix
 fi
+
+# ===== Step 2b: Provision the final report script =====
+# The report script is generated here by bootstrap and later executed by
+# /opt/ansipull-wrapper.sh at the end of every scheduled run. Its output goes
+# to /var/log/ansipull-report.log and to the systemd journal.
+REPORT_SCRIPT=/opt/ansipull-report.sh
+info "Provisioning the final report script"
+if [ -f scripts/provision-report.sh ]; then
+  sudo install -m 0755 scripts/provision-report.sh "$REPORT_SCRIPT"
+else
+  # Running via `curl ... | bash` without a checkout: fetch it from the repo
+  if ! command -v curl &> /dev/null; then
+    sudo dnf install -y curl
+  fi
+  sudo curl -fsSL \
+    "https://raw.githubusercontent.com/uduwat/cattle-not-laptops/main/scripts/provision-report.sh" \
+    -o "$REPORT_SCRIPT"
+  sudo chmod 755 "$REPORT_SCRIPT"
+fi
+success "Report script: $REPORT_SCRIPT"
+echo ""
 
 
 # ===== Step 3: Prompt for principaluser =====
@@ -155,10 +184,13 @@ if [ "$enable_timer" = "y" ]; then
 
   sudo tee /opt/ansipull-wrapper.sh >/dev/null <<'EOF'
 #!/bin/bash
-/usr/bin/ansible-pull \
--U https://github.com/uduwat/cattle-not-laptops.git \
--e @/opt/ansipull.env \
-local.yml
+# Runs the provisioning playbook, then generates the final report.
+# Both the playbook output and the report are captured by the journal.
+exec /opt/ansipull-report.sh run \
+  /usr/bin/ansible-pull \
+  -U https://github.com/uduwat/cattle-not-laptops.git \
+  -e @/opt/ansipull.env \
+  local.yml
 EOF
   sudo chmod 700 /opt/ansipull-wrapper.sh
   info "Variables file: /opt/ansipull.env"
@@ -174,7 +206,7 @@ Type=oneshot
 ExecStart=/opt/ansipull-wrapper.sh
 StandardOutput=journal
 StandardError=journal
-Environment="ANSIBLE_LOG_PATH=/var/log/ansipull-wrapper.log"
+Environment="PROVISIONING_REPORT_LOG=/var/log/ansipull-report.log"
 Environment="ANSIBLE_CALLBACK_RESULT_FORMAT=yaml"
 
 [Install]
@@ -231,7 +263,7 @@ if [ "$EUID" -ne 0 ] && ! sudo -n true 2>/dev/null; then
   warn "ansible-pull requires sudo; you may be prompted for password"
 fi
 
-if sudo "${ANSIBLE_PULL_CMD[@]}"; then
+if sudo "$REPORT_SCRIPT" run "${ANSIBLE_PULL_CMD[@]}"; then
   echo ""
   echo -e "${GREEN}════════════════════════════════════════════${NC}"
   success "Bootstrap complete!"
@@ -249,6 +281,9 @@ if sudo "${ANSIBLE_PULL_CMD[@]}"; then
   echo "  • Git CLI tools"
   echo "  • Secret manager (keepassxc)"
   echo ""
+  echo "Final report: /var/log/ansipull-report.log"
+  echo "           or: journalctl -t cattle-not-laptops"
+  echo ""
   if [ "$enable_timer" = "y" ]; then
     echo "Automatic daily runs are enabled."
     echo "You can view logs with: journalctl -u ansible-pull.service"
@@ -260,7 +295,7 @@ else
   error "ansible-pull failed. Please check the output above."
   echo ""
   echo "Common issues:"
-  echo "  • Private dotfiles repo: Verify SSH key or PAT"
+  echo "  • Private dotfiles repo: use an SSH URL or embed a PAT in the HTTPS URL"
   echo "  • Network error: Check your internet connection"
   echo "  • Permission denied: Verify principaluser and sudo access"
   echo ""
