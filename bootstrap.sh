@@ -82,6 +82,15 @@ else
 fi
 echo ""
 
+if ! command -v gawk &> /dev/null; then
+  warn "gawk not found; installing..."
+  sudo dnf install -y gawk
+  success "gawk installed"
+else
+  success "gawk already installed"
+fi
+echo ""
+
 info "Install Ansible collections"
 if [ -f requirements.yaml ]; then
   ansible-galaxy collection install -r requirements.yaml
